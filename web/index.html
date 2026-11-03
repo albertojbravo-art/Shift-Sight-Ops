@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shift Sight Ops — Demo Night</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="char-styled">
+<header class="topbar">
+  <div class="brand">
+    <h1>SHIFT SIGHT OPS</h1>
+    <span class="subtitle">Demo night &middot; all data synthetic</span>
+  </div>
+  <div class="top-actions">
+    <div class="mode-toggle" role="group" aria-label="Demo mode">
+      <button id="modeReplay" class="btn mode active" type="button">Replay</button>
+      <button id="modePlay" class="btn mode" type="button">Play the lead</button>
+    </div>
+    <span class="badge" id="baselineBadge">REPLAY &mdash; NO INTERVENTION (BASELINE)</span>
+    <button id="avatarToggle" class="btn" type="button" aria-pressed="true">Avatar: on (plan A)</button>
+    <button id="charToggle" class="btn" type="button" aria-pressed="true">Character: styled</button>
+  </div>
+  <div class="rec-group">
+    <button id="recToggle" class="btn rec" type="button" aria-pressed="false">&#9673; Recording mode</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-block">
+    <div class="hero-label">SHIFT CLOCK &middot; 17:30 &rarr; 03:30</div>
+    <div class="hero-clock" id="clock">17:30</div>
+    <div class="hero-sub" id="minuteLabel">Minute 0 of 600</div>
+  </div>
+  <div class="hero-block hero-center">
+    <div class="hero-label">PROJECTED ON-TIME SHIPPING (OTS)</div>
+    <div class="hero-ots"><span id="otsValue">&mdash;</span><span class="hero-ots-unit">%</span></div>
+    <div class="hero-sub">Target <strong>99%</strong> &middot; alert fires below target</div>
+  </div>
+  <div class="hero-block hero-right">
+    <div class="hero-label">STATUS</div>
+    <div class="hero-sub" id="rosterLine">&mdash;</div>
+    <div class="status-pill" id="statusPill">&mdash;</div>
+  </div>
+</section>
+
+<main class="layout">
+  <section class="board">
+    <div class="panel curve-panel">
+      <div class="panel-head">
+        <h2>Projected OTS through the night</h2>
+        <span class="panel-note">Engine projection at each minute &middot; red = below the 99% target</span>
+      </div>
+      <canvas id="curve"></canvas>
+      <div class="decision-bar" id="decisionBar" hidden>
+        <div class="decision-head">
+          <span class="decision-tag">YOUR CALL</span>
+          <span class="decision-title" id="decisionTitle"></span>
+        </div>
+        <p class="decision-text" id="decisionText"></p>
+        <p class="decision-note" id="decisionNote" hidden></p>
+        <div class="decision-btns">
+          <button id="decisionApply" class="btn primary" type="button"></button>
+          <button id="decisionSkip" class="btn" type="button"></button>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="playBtn" class="btn primary" type="button">&#10074;&#10074; Pause</button>
+        <button id="restartBtn" class="btn" type="button">&#10227; Restart</button>
+        <div class="speed-group" role="group" aria-label="Playback speed">
+          <button class="btn speed" data-speed="2" type="button">2&times;</button>
+          <button class="btn speed" data-speed="5" type="button">5&times;</button>
+          <button class="btn speed active" data-speed="10" type="button">10&times;</button>
+          <button class="btn speed" data-speed="20" type="button">20&times;</button>
+          <button class="btn speed" data-speed="40" type="button">40&times;</button>
+        </div>
+        <span class="speed-note">speed = shift-minutes per second</span>
+      </div>
+      <div class="scrubber-wrap">
+        <input id="scrubber" type="range" min="0" max="600" step="1" value="0" aria-label="Seek in the night">
+        <div class="scrubber-markers" id="scrubberMarkers"></div>
+      </div>
+    </div>
+
+    <div class="panel chain-panel">
+      <div class="panel-head">
+        <h2>Chain &mdash; live mass flow</h2>
+        <span class="panel-note" id="chainNote"></span>
+      </div>
+      <div class="chain" id="chain">
+        <canvas id="chainCanvas"></canvas>
+        <div class="chain-nodes" id="chainNodes"></div>
+      </div>
+      <div class="chain-links" id="chainLinks"></div>
+    </div>
+
+    <div class="panel gates-panel">
+      <div class="panel-head">
+        <h2>Cutoff gates</h2>
+        <span class="panel-note">Fill = items cleared through Pack &middot; seal = on-time % when the gate closes</span>
+      </div>
+      <div class="gates" id="gates"></div>
+    </div>
+  </section>
+
+  <aside class="panel copilot" id="copilotPanel">
+    <div class="panel-head">
+      <h2>Copilot &mdash; decision record</h2>
+      <span class="panel-note">Verbatim engine output (engine/demo.py)</span>
+    </div>
+
+    <section class="record-block" id="preshiftBlock">
+      <h3>Pre-shift &middot; before 17:30</h3>
+      <p class="alert-line" id="preshiftAlert"></p>
+      <p id="preshiftBinding"></p>
+      <h4>Decision ladder &mdash; recommended moves (10 min relocation cost each)</h4>
+      <ul class="moves" id="preshiftMoves"></ul>
+      <p class="ladder-result" id="preshiftResult"></p>
+      <p id="preshiftPosting"></p>
+    </section>
+
+    <section class="record-block dormant" id="midshiftBlock">
+      <h3 id="midshiftTitle">Mid-shift &middot; detection</h3>
+      <p class="alert-line" id="midshiftAlert"></p>
+      <p id="midshiftBinding"></p>
+      <h4>Decision ladder &mdash; recommended moves</h4>
+      <ul class="moves" id="midshiftMoves"></ul>
+      <p class="ladder-result" id="midshiftResult"></p>
+      <div class="posting-card" id="postingCard"></div>
+      <div class="posting-honesty" id="postingHonesty" hidden></div>
+    </section>
+
+    <section class="record-block outcome" id="outcomeBlock" hidden>
+      <h3 id="outcomeTitle">Night outcome &mdash; this replay</h3>
+      <p id="outcomeLine"></p>
+      <p id="outcomeMoves"></p>
+      <button id="againBtn" class="btn" type="button" hidden>&#10227; Restart &amp; change decisions</button>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">
+  <span>Every figure on this page is generated by the deterministic engine in <code>engine/</code> (traces: <code>web/traces.json</code>, built by <code>web/build_traces.py</code>). The language model never produces numbers.</span>
+</footer>
+
+<!-- Layer 4 — exchanges (direction: Mesa, 2026-11-02). Not a chat: each
+     actor, one channel. The lead speaks — the question shows transcribed,
+     anchored to the avatar panel. The copilot WRITES on the card, phrase
+     by phrase, with visible chips of its real engine tool calls. Each
+     finished exchange folds into the night log at the side. Texts are
+     the copilot's real answers (web/exchanges.json; provenance in
+     web/EXCHANGES.md). Play-the-lead mode only. -->
+<div class="corner" id="corner" hidden>
+  <section class="nightlog" id="nightLog" hidden aria-label="Night log">
+    <div class="nightlog-head">NIGHT LOG &middot; BIT&Aacute;CORA</div>
+    <ol class="nightlog-list" id="nightLogList"></ol>
+  </section>
+
+  <section class="exchange-card" id="exchangeCard" hidden aria-label="Copilot card">
+    <div class="exchange-head">
+      <span class="exchange-tag">COPILOT &mdash; IN WRITING</span>
+      <span class="exchange-clock" id="exchangeClock"></span>
+    </div>
+    <div class="exchange-chips" id="exchangeChips"></div>
+    <div class="exchange-phrases" id="exchangePhrases"></div>
+  </section>
+
+  <div class="exchange-question" id="exchangeQuestion" hidden></div>
+
+  <section class="avatar-panel" id="avatarPanel" aria-label="The lead">
+    <div class="avatar-frame" id="avatarFrame">
+      <svg class="avatar-bust bust-silhouette" id="avatarBust" viewBox="0 0 200 150" aria-hidden="true">
+        <path class="bust-shoulders" d="M12 150 C20 104 50 86 100 86 C150 86 180 104 188 150 Z"></path>
+        <g class="bust-headgrp" id="avatarHead">
+          <circle class="bust-head" cx="100" cy="56" r="33"></circle>
+          <path class="bust-band" d="M63 50 A37 37 0 0 1 137 50"></path>
+          <rect class="bust-cup" x="56" y="42" width="14" height="29" rx="6.5"></rect>
+          <rect class="bust-cup" x="130" y="42" width="14" height="29" rx="6.5"></rect>
+          <path class="bust-boom" d="M137 68 C135 79 126 84 115 83"></path>
+          <circle class="bust-mic" cx="111" cy="84" r="4.2"></circle>
+          <g class="bust-gaze" id="avatarGaze">
+            <circle class="bust-eye" id="eyeL" cx="87.5" cy="53" r="3"></circle>
+            <circle class="bust-eye" id="eyeR" cx="112.5" cy="53" r="3"></circle>
+          </g>
+        </g>
+      </svg>
+      <!-- The styled character (variant — Mesa PR #205 adenda, after the
+           Drive taste profile): a drawn figure, not a "no photo" icon.
+           Flat board tones with real internal contrast and a halftone
+           dot pattern in the shadows; the same headset (his trade), ONE
+           brand detail in Forge Amber #E06E1A (the mic tip — brand
+           accent, not a semantic color). NO arms or hands (Alberto,
+           2026-11-02 22:10: «Puede no llevar los brazos, todo lo demás
+           está bien»): the beats are carried by what remains — the
+           gaze, the listening tilt, the question tilt, the nod, the
+           ring, the retreat at the step. Still no mouth, no detailed
+           face: the same two gaze dots and the same gaze / listening /
+           nod system (the bust-* classes are shared). The dev toggle
+           (body.char-styled) chooses the figure; the silhouette above
+           stays the default until Alberto decides. -->
+      <svg class="avatar-bust bust-styled" id="avatarStyled" viewBox="0 0 200 150" aria-hidden="true">
+        <defs>
+          <pattern id="figHalftone" width="5.5" height="5.5" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
+            <circle cx="1.4" cy="1.4" r="1.05" fill="#22303F"></circle>
+          </pattern>
+        </defs>
+        <path class="fig-shirt" d="M14 150 C20 108 44 92 74 88 L126 88 C156 92 180 108 186 150 Z"></path>
+        <path class="fig-shirt-sh" d="M124 88 C156 92 180 108 186 150 L124 150 Z"></path>
+        <path class="fig-ht" fill="url(#figHalftone)" d="M124 88 C156 92 180 108 186 150 L124 150 Z"></path>
+        <path class="fig-collar" d="M83 87 L100 105 L117 87 L125 93 L100 117 L75 93 Z"></path>
+        <path class="fig-placket" d="M98.6 109 L101.4 109 L101.4 150 L98.6 150 Z"></path>
+        <path class="fig-neck" d="M87 72 L113 72 L115 94 C108 99 92 99 85 94 Z"></path>
+        <g class="bust-headgrp fig-headgrp">
+          <ellipse class="fig-ear" cx="62" cy="57" rx="6" ry="9"></ellipse>
+          <ellipse class="fig-ear" cx="138" cy="57" rx="6" ry="9"></ellipse>
+          <circle class="fig-face" cx="100" cy="54" r="37"></circle>
+          <path class="fig-face-sh" d="M100 17 A37 37 0 0 1 100 91 C113 73 113 35 100 17 Z"></path>
+          <path class="fig-ht" fill="url(#figHalftone)" d="M100 17 A37 37 0 0 1 100 91 C113 73 113 35 100 17 Z"></path>
+          <path class="fig-hair" d="M62.5 54 C60 27 78 13.5 100 13.5 C123 13.5 140 28 137.5 54 C131 38 120 30.5 101 30 C84 29.5 70 38 62.5 54 Z"></path>
+          <path class="fig-band" d="M60 47 A40 40 0 0 1 140 47"></path>
+          <rect class="fig-cup" x="51" y="39" width="17" height="32" rx="7.5"></rect>
+          <rect class="fig-cup" x="132" y="39" width="17" height="32" rx="7.5"></rect>
+          <rect class="fig-cup-rim" x="55" y="43.5" width="9" height="23" rx="4.5"></rect>
+          <rect class="fig-cup-rim" x="136" y="43.5" width="9" height="23" rx="4.5"></rect>
+          <path class="fig-boom" d="M141 65 C139 78 130 84.5 118 83.5"></path>
+          <circle class="fig-mic-tip" cx="114" cy="83.5" r="4.4"></circle>
+          <g class="bust-gaze">
+            <circle class="bust-eye" cx="87" cy="52" r="3.1"></circle>
+            <circle class="bust-eye" cx="113" cy="52" r="3.1"></circle>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="avatar-caption">THE LEAD &middot; ON SCREEN</div>
+  </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

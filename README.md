@@ -25,6 +25,15 @@ this repository's history starts with the first construction commit of the event
 - If the model API is unavailable, the copilot degrades to the engine's own templated
   explanations: the numbers and alerts never depend on the model.
 
+## Try the board
+
+The demo board lives in `web/` — a single static page: no build step, no server of
+its own, **no API calls and no keys**. It replays the demo night from the engine's
+own traces, and the copilot's two exchanges are reproduced verbatim from a live
+Muse Spark Open tool-calling session (provenance in `web/EXCHANGES.md`). To run it,
+serve the folder with any static file server (for example
+`python3 -m http.server` inside `web/`) and open the page.
+
 ## The demo night (all data synthetic)
 
 One night shift, 17:30–03:30, a 100,000-unit day, 12 cutoff times, a five-node chain

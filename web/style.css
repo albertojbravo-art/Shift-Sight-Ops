@@ -1,0 +1,514 @@
+/* Shift Sight Ops — layer 1 demo board. Dark theme, no external assets. */
+:root {
+  --bg: #0b0f14;
+  --panel: #121922;
+  --panel-2: #0e141c;
+  --line: #223041;
+  --text: #dbe4ee;
+  --muted: #93a5bb;
+  --teal: #2dd4bf;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.35);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 12px 22px 26px;
+}
+h1, h2, h3, h4 { margin: 0; font-weight: 600; }
+code { color: var(--teal); font-size: 0.92em; }
+
+/* --- top bar ---------------------------------------------------------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.brand { display: flex; align-items: baseline; gap: 12px; }
+.brand h1 { font-size: 20px; letter-spacing: 0.14em; }
+.subtitle { color: var(--muted); font-size: 13px; }
+.badge {
+  border: 1px solid var(--amber); color: var(--amber);
+  border-radius: 999px; padding: 4px 12px; font-size: 12px; letter-spacing: 0.08em;
+}
+.top-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mode-toggle { display: flex; gap: 4px; }
+.btn.mode.active { background: #134e4a; border-color: var(--teal); color: #fff; }
+
+/* --- hero ------------------------------------------------------------- */
+.hero {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 11px 22px; margin-bottom: 16px;
+}
+.hero-block { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.hero-center { text-align: center; }
+.hero-right { text-align: right; align-items: flex-end; }
+.hero-label { color: var(--muted); font-size: 11px; letter-spacing: 0.16em; }
+.hero-clock { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.05; }
+.hero-ots { font-size: 88px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.0; }
+.hero-ots-unit { font-size: 28px; color: var(--muted); margin-left: 2px; }
+.hero-sub { color: var(--muted); font-size: 13px; }
+.status-pill {
+  font-size: 16px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 4px 14px; border-radius: 8px; border: 1px solid var(--line);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.status-pill.risk { color: #fff; background: #7f1d1d; border-color: var(--red); }
+.status-pill.ok { color: #052e22; background: var(--green); border-color: var(--green); }
+.status-pill.done { color: var(--text); background: var(--panel-2); }
+
+/* --- layout / panels ---------------------------------------------------- */
+.layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+.board { display: flex; flex-direction: column; gap: 11px; min-width: 0; }
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
+}
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.panel-head h2 { font-size: 15px; letter-spacing: 0.04em; }
+.panel-note { color: var(--muted); font-size: 12px; }
+#curve { width: 100%; height: 240px; display: block; transition: filter 0.2s ease; }
+
+/* --- controls ----------------------------------------------------------- */
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.btn {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer;
+}
+.btn:hover { border-color: var(--teal); }
+.btn.primary { background: #134e4a; border-color: var(--teal); min-width: 108px; }
+.speed-group { display: flex; gap: 4px; margin-left: 8px; }
+.btn.speed { padding: 7px 10px; }
+.btn.speed.active { background: #134e4a; border-color: var(--teal); color: #fff; }
+.speed-note { color: var(--muted); font-size: 12px; }
+.scrubber-wrap { position: relative; margin-top: 10px; padding-bottom: 16px; }
+#scrubber { width: 100%; accent-color: var(--teal); cursor: pointer; }
+.scrubber-markers { position: absolute; left: 0; right: 0; top: 22px; height: 14px; pointer-events: none; }
+.scrubber-markers .tick {
+  position: absolute; transform: translateX(-50%); color: var(--amber);
+  font-size: 10px; white-space: nowrap; letter-spacing: 0.02em;
+}
+.scrubber-markers .tick::before { content: "\25B2"; display: block; text-align: center; font-size: 8px; line-height: 1; }
+/* D1: a tick naming a future event stays hidden until its minute. */
+.scrubber-markers .tick.future { display: none; }
+.scrubber-markers .tick.edge-start { transform: translateX(0); }
+.scrubber-markers .tick.edge-start::before { text-align: left; }
+.scrubber-markers .tick.edge-end { transform: translateX(-100%); }
+.scrubber-markers .tick.edge-end::before { text-align: right; }
+
+/* --- chain (layer 2: live mass flow) ------------------------------------ */
+.chain { position: relative; margin-top: 2px; }
+#chainCanvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; pointer-events: none;
+}
+.chain-nodes {
+  position: relative; z-index: 1;
+  display: flex; justify-content: space-between; gap: 8px;
+}
+.chain-node {
+  flex: 0 1 150px; min-width: 0;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.chain-node .node-name { font-size: 15px; font-weight: 700; letter-spacing: 0.05em; }
+.chain-node .node-meta { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.chain-node .node-meta b { color: var(--text); font-weight: 600; }
+.chain-node .node-cum { font-size: 13px; font-variant-numeric: tabular-nums; }
+.chain-node .node-cum b { font-weight: 700; font-size: 15px; }
+.chain-node .node-queue-bar { height: 12px; background: #1b2635; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+.chain-node .node-queue-bar > div { height: 100%; background: var(--amber); width: 0%; }
+.chain-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.link-chip {
+  font-size: 11.5px; border: 1px solid var(--line); border-radius: 999px;
+  padding: 3px 10px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.link-chip b { color: var(--text); font-weight: 600; }
+.link-chip.blocked { border-color: var(--red); color: var(--red); }
+.link-chip.blocked b { color: var(--red); }
+
+/* --- gates: one temporal row of 12 mini-gates --------------------------- */
+.gates { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; }
+.gate {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px;
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
+}
+.gate .gate-time { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.gate .bar { height: 8px; background: #1b2635; border-radius: 4px; overflow: hidden; }
+.gate .bar > div { height: 100%; background: var(--teal); width: 0%; }
+.gate .gate-sub { font-size: 10.5px; color: var(--muted); line-height: 1.3; }
+/* The seal has its own reserved line: time + seal side by side would need
+   ~88px inside a ~72px cell and the percentage overflowed the gate. */
+.gate .gate-seal { font-size: 12px; font-weight: 700; opacity: 0; height: 15px; line-height: 15px; }
+.gate.closed .gate-seal { opacity: 1; animation: seal-in 0.12s ease-out; }
+@keyframes seal-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.gate.closed.ok { border-color: var(--green); }
+.gate.closed.ok .gate-seal { color: var(--green); }
+.gate.closed.warn { border-color: var(--amber); }
+.gate.closed.warn .gate-seal { color: var(--amber); }
+.gate.closed.bad { border-color: var(--red); }
+.gate.closed.bad .gate-seal { color: var(--red); }
+.gate.closed .bar > div { background: #54677c; }
+
+/* --- copilot panel -------------------------------------------------------- */
+.copilot { display: flex; flex-direction: column; gap: 16px; }
+.record-block h3 { font-size: 14px; letter-spacing: 0.03em; margin-bottom: 8px; }
+.record-block h4 { font-size: 12px; color: var(--muted); margin: 12px 0 6px; letter-spacing: 0.03em; }
+.record-block p { margin: 6px 0; font-size: 13.5px; line-height: 1.45; }
+.alert-line { color: var(--amber); font-weight: 600; }
+.moves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.moves li {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 10px; font-size: 13px; font-variant-numeric: tabular-nums;
+}
+.moves .eff { color: var(--muted); }
+.ladder-result { font-weight: 700; }
+.record-block { transition: max-height 0.3s ease-out, opacity 0.3s ease-out; }
+.record-block.dormant { opacity: 0.38; max-height: 48px; overflow: hidden; }
+.record-block.active { max-height: 1500px; }
+.record-block.active { outline: 1px solid var(--amber); border-radius: 10px; padding: 10px; margin: -10px; opacity: 1; }
+.posting-card {
+  border: 1px solid var(--amber); background: rgba(251, 191, 36, 0.08);
+  border-radius: 10px; padding: 10px 12px; margin-top: 10px; font-size: 13.5px;
+}
+.posting-card .posting-title { font-weight: 800; letter-spacing: 0.04em; }
+.posting-card .posting-reason { color: var(--muted); font-size: 12.5px; margin-top: 6px; line-height: 1.45; }
+.record-block.outcome { border-top: 1px solid var(--line); padding-top: 12px; }
+#againBtn { margin-top: 10px; }
+
+/* --- layer 3: play-the-lead decision bar + posting honesty -------------- */
+.decision-bar {
+  border: 1px solid var(--amber); background: rgba(251, 191, 36, 0.07);
+  border-radius: 10px; padding: 12px 14px; margin-top: 12px;
+}
+.decision-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.decision-tag {
+  background: var(--amber); color: #231a00; font-weight: 800; font-size: 11px;
+  letter-spacing: 0.1em; border-radius: 6px; padding: 2px 8px;
+}
+.decision-title { font-size: 18px; font-weight: 700; }
+.decision-text { margin: 8px 0 0; font-size: 13.5px; line-height: 1.5; }
+.decision-note { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.decision-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.decision-btns .btn { font-size: 15px; }
+.decision-btns .btn.primary { padding: 11px 18px; }
+
+/* While a call is pending, the board steps back and the call takes focus. */
+.chain-panel, .gates-panel { transition: filter 0.2s ease; }
+body.deciding #curve,
+body.deciding .chain-panel,
+body.deciding .gates-panel { filter: brightness(0.55); }
+.posting-honesty {
+  border: 1px dashed var(--amber); border-radius: 10px; padding: 10px 12px;
+  margin-top: 10px; font-size: 12.5px; line-height: 1.5; color: var(--amber);
+}
+
+.foot { color: var(--muted); font-size: 12px; margin-top: 16px; line-height: 1.5; }
+
+/* --- recording mode (D2, Mesa PR #204) ----------------------------------
+   A separate toggle, apart from the demo-mode controls. On record:
+   every development control disappears (mode buttons, the path badge,
+   the avatar plan toggle, play/speed/scrubber) and the decision-record
+   panel folds away entirely — which is also what kills the card/record
+   overlap: with no record visible, the card covers no live text. The
+   right column is then, top to bottom: the copilot's card (only while
+   it writes; its folded content passes to the log), the night log —
+   which in this mode also carries the engine's verbatim output — and
+   the avatar panel. In dev mode everything stays exactly as built. */
+.rec-group { border-left: 1px solid var(--line); padding-left: 14px; }
+.btn.rec.on { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 700; }
+body.recording .mode-toggle,
+body.recording #baselineBadge,
+body.recording #avatarToggle,
+body.recording #charToggle,
+body.recording .controls,
+body.recording .scrubber-wrap { display: none; }
+body.recording #copilotPanel { display: none; }
+body.recording .corner {
+  top: 226px; bottom: 22px;
+  width: calc((100vw - 60px) / 3); min-width: 300px; max-width: none;
+}
+body.recording .exchange-card { order: 1; }
+body.recording .exchange-question { order: 2; }
+body.recording .nightlog { order: 3; }
+body.recording .avatar-panel { order: 4; }
+/* The engine's literal output, as proof — shown only at the night's
+   close (PR #205); until then each log entry is its one-line summary. */
+.log-proof {
+  display: block; white-space: pre-line; margin-top: 4px;
+  color: var(--muted); font-size: 11.5px; line-height: 1.5;
+}
+.log-proof[hidden] { display: none; }
+
+/* --- PR #205 (Claude, 2026-11-02 21:06): the recording frame is a
+   fixed 1080 stage and the focus follows the beat. ---------------- */
+/* Fixed height: the page never grows on record — no scrollbar, ever.
+   While a YOUR CALL is open the gates row folds away clean (no push),
+   and comes back when the call closes. */
+body.recording { height: 100vh; overflow: hidden; }
+body.recording.deciding .gates-panel { display: none; }
+/* On record the dimming is ONE mechanism — opacity (focus rules
+   below); the dev-mode brightness filter steps aside. */
+body.recording.deciding #curve,
+body.recording.deciding .chain-panel,
+body.recording.deciding .gates-panel { filter: none; }
+/* The log is height-bounded with its own internal scroll, and the
+   avatar panel is anchored to the bottom of the column: it does not
+   move when the log grows. */
+body.recording .nightlog { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+body.recording .avatar-panel { margin-top: auto; }
+/* Microtext off on record: the chain's explanatory legend, the gates
+   legend and the footer are noise on the recording board — that
+   information lives in the voice and the README. Dev keeps them. */
+body.recording .panel-note,
+body.recording .foot { display: none; }
+/* The hero number carries the state color on record — engine
+   semantics, the same three bands as the gate seals: green on track
+   (>= the 99 target), amber below target, red below 90 (confirmed
+   damage). The classes are set by render() only in recording mode;
+   the character's neutral tones are untouched. */
+.hero-ots #otsValue { transition: color 0.3s ease; }
+.hero-ots #otsValue.ots-ok { color: var(--green); }
+.hero-ots #otsValue.ots-warn { color: var(--amber); }
+.hero-ots #otsValue.ots-bad { color: var(--red); }
+/* Focus by beat: whatever does not take part in the moment drops to
+   40% opacity (smooth); the night at rest is all at 100%. The states
+   (focus-exchange / focus-call / focus-step) are set by render()
+   from the states the page already knows. */
+.topbar, .hero, .board, .curve-panel, .exchange-card, .exchange-question { transition: opacity 0.35s ease; }
+.chain-panel, .gates-panel { transition: filter 0.2s ease, opacity 0.35s ease; }
+body.recording.focus-exchange .topbar,
+body.recording.focus-exchange .curve-panel,
+body.recording.focus-exchange .chain-panel,
+body.recording.focus-exchange .gates-panel,
+body.recording.focus-exchange .nightlog { opacity: 0.4; }
+body.recording.focus-call .topbar,
+body.recording.focus-call .hero,
+body.recording.focus-call .chain-panel,
+body.recording.focus-call .gates-panel,
+body.recording.focus-call .corner,
+body.recording.focus-call #curve { opacity: 0.4; }
+body.recording.focus-step .topbar,
+body.recording.focus-step .board,
+body.recording.focus-step .corner { opacity: 0.4; }
+
+/* --- layer 4: exchanges + avatar panel (direction: Mesa, 2026-11-02) ----
+   Not a chat: each actor, one channel. The lead speaks (the question,
+   transcribed, anchored to the avatar panel); the copilot WRITES on the
+   card, phrase by phrase, with visible chips of its real engine tool
+   calls; each finished exchange folds into the night log.
+   The character is geometric, in two NEUTRAL board tones on purpose: no
+   semantic color (teal/green/amber/red) and no YOUR CALL amber ever
+   touches it. Its loop animations are breathing and blinking, plus —
+   since D3 (Mesa PR #204) — the speech ring's beat while the PERSON
+   speaks; everything else is a one-shot movement-event. No lip-sync:
+   while the copilot writes, the writing shows its own caret on the
+   card and the character only watches/listens; the character's
+   states (gaze, listening, nod, ring) are driven by the exchange
+   engine in app.js. */
+.corner {
+  position: fixed; right: 22px; bottom: 22px; z-index: 40;
+  width: 20%; min-width: 264px; max-width: 400px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.corner[hidden], .nightlog[hidden], .exchange-card[hidden], .exchange-question[hidden] { display: none; }
+
+/* The night log (bitácora): folded exchanges with their minute. */
+.nightlog {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; transition: border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.35s ease;
+}
+.nightlog.highlight { border-color: var(--text); box-shadow: 0 0 0 1px rgba(219, 228, 238, 0.35); }
+.nightlog-head { color: var(--muted); font-size: 10.5px; letter-spacing: 0.16em; margin-bottom: 6px; }
+.nightlog-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.log-entry { font-size: 12px; line-height: 1.45; animation: log-in 0.35s ease-out; }
+.log-entry .log-clock {
+  display: inline-block; font-weight: 700; font-variant-numeric: tabular-nums;
+  border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; margin-right: 6px;
+  background: var(--panel-2); color: var(--text); font-size: 11px;
+}
+.log-entry .log-q { color: var(--text); }
+.log-entry .log-text { color: var(--muted); display: block; margin-top: 1px; }
+@keyframes log-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+/* The copilot's card: phrases appear at reading rhythm, chips first. */
+.exchange-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+}
+.exchange-card.folding { animation: card-fold 0.45s ease-in forwards; }
+@keyframes card-fold {
+  to { opacity: 0; transform: translateY(10px) scale(0.97); }
+}
+.exchange-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.exchange-tag { color: var(--muted); font-size: 10.5px; letter-spacing: 0.16em; }
+.exchange-clock { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.exchange-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+.xchip {
+  font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px;
+  padding: 3px 10px; opacity: 0; transform: translateY(3px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.xchip .xchip-tool { color: var(--muted); }
+.xchip.in { opacity: 1; transform: none; }
+.exchange-phrases { display: flex; flex-direction: column; gap: 6px; }
+.exchange-phrases .phrase {
+  margin: 0; font-size: 13.5px; line-height: 1.45;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.exchange-phrases .phrase.in { opacity: 1; transform: none; }
+
+/* The lead's spoken line, transcribed: anchored to the avatar panel
+   (directly above it in the stack; with plan B — no panel — it anchors
+   to the card instead). */
+.exchange-question {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 12px; font-size: 13.5px; line-height: 1.4;
+}
+.exchange-question .q-label {
+  display: block; color: var(--muted); font-size: 10px; letter-spacing: 0.16em; margin-bottom: 2px;
+}
+
+/* The avatar panel: fixed corner opposite the hero. */
+.avatar-panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 12px 8px;
+  transition: transform 0.45s ease, opacity 0.45s ease;
+}
+.avatar-panel.retreated { transform: translateX(calc(100% + 30px)); opacity: 0; pointer-events: none; }
+.avatar-frame {
+  position: relative; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel-2); padding: 8px 6px 2px;
+  display: flex; justify-content: center;
+  transition: box-shadow 0.25s ease, transform 0.3s ease;
+}
+/* The speech ring (D3, Mesa PR #204): it belongs to the PERSON alone.
+   It beats only while the lead speaks — his question on screen, and
+   the beat of his answer at a YOUR CALL — never while the copilot
+   writes. With a single owner it can afford to be plainly visible:
+   a 2 px border in the board's light neutral tone. */
+.avatar-panel.ring-on .avatar-frame { animation: lead-ring 1.4s ease-in-out infinite; }
+@keyframes lead-ring {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(219, 228, 238, 0.55); }
+  50% { box-shadow: 0 0 0 2px rgba(219, 228, 238, 0.95); }
+}
+/* The card's own writing caret (D3): a sober block that trails the
+   text while the copilot writes, so the writing has a visible owner
+   that is NOT the person's ring. */
+.xcaret {
+  display: block; width: 8px; height: 14px; margin-top: 2px;
+  background: var(--text); animation: caret-blink 0.9s steps(1) infinite;
+}
+@keyframes caret-blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+/* Asking: the tilt toward the board, formalized (~300 ms — the frame's
+   own transform transition). One-shot, held while the question lands. */
+.avatar-panel.asking .avatar-frame { transform: rotate(-1.6deg); }
+/* D4 (Mesa PR #204): the figure FILLS its frame — big head and
+   shoulders, cut at the chest — and carries its identity in the tool
+   of the trade: a floor lead's headset with a boom mic. No mouth, no
+   detailed face (the two gaze dots stay), no uniform, no logo; the
+   figure is one neutral board tone, the headset a second, darker
+   neutral. Continuous life: breathing 1.00–1.01 on a ~4 s cycle and
+   a deterministic blink every ~4.5 s. */
+.avatar-bust { width: 96%; max-width: 340px; height: auto; animation: breathe 4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.01); } }
+.bust-head, .bust-shoulders { fill: #54677c; }
+.bust-cup, .bust-mic { fill: #2e3d4f; }
+.bust-band, .bust-boom { fill: none; stroke: #2e3d4f; stroke-linecap: round; }
+.bust-band { stroke-width: 6; }
+.bust-boom { stroke-width: 5; }
+.bust-eye { fill: var(--bg); transform-box: fill-box; transform-origin: center; animation: blink 4.5s linear infinite; }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.12); } 97.5% { transform: scaleY(1); } }
+
+/* --- the repertoire (Alberto, 2026-11-02 19:31): a living but sober
+   character. Everything below is a state the exchange engine sets and
+   clears; the only loops remain breathing, blinking and the person's
+   speech-ring beat (D3). No mouth, no new face parts, no semantic
+   color, no lip-sync: the SAME two dot eyes, moved as one group. --- */
+/* Gaze: both dots shift a few units as one group, ~200 ms glides.
+   Card = up-left (the card sits above the panel), YOUR CALL = further
+   left (the decision bar on the curve panel), hero = up (the OTS
+   number), down = listening. No class = resting center. */
+.bust-gaze { transition: transform 0.2s ease; }
+.avatar-panel.gaze-card .bust-gaze { transform: translate(-2.8px, -1.9px); }
+.avatar-panel.gaze-call .bust-gaze { transform: translate(-4.6px, -0.9px); }
+.avatar-panel.gaze-hero .bust-gaze { transform: translate(0, -3.8px); }
+.avatar-panel.gaze-down .bust-gaze { transform: translate(0, 2.3px); }
+/* The head group pivots at the neck: listening tilt and the nod live
+   here, never fighting the bust's breathing (a different element). */
+.bust-headgrp { transform-box: fill-box; transform-origin: 50% 94%; transition: transform 0.25s ease; }
+/* Listening (while the engine chips arrive): head inclined 1.8°
+   toward the card... */
+.avatar-panel.listening .bust-headgrp { transform: rotate(-1.8deg); }
+/* ...and one slow double blink for the length of the listening beat:
+   it replaces the blink loop only while the class is on. */
+.avatar-panel.listening .bust-eye { animation: listen-blink 1.15s ease-in-out 1; }
+@keyframes listen-blink {
+  0%, 36%, 78%, 100% { transform: scaleY(1); }
+  18%, 54% { transform: scaleY(0.12); }
+}
+/* The nod (on answering a YOUR CALL): one clear dip of the head,
+   ~450 ms, 2.6° at the neck — noticed, not a caricature. */
+.avatar-panel.nodding .bust-headgrp { animation: head-nod 0.45s ease; }
+@keyframes head-nod {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  45% { transform: translateY(2.2px) rotate(2.6deg); }
+}
+
+/* --- the styled character (variant — Mesa PR #205 adenda, 2026-11-02
+   21:37, after Alberto's taste profile in Drive): the silhouette read
+   as the generic "no photo" icon his profile rejects, so this figure
+   is DRAWN, not iconic: flat board tones with real internal contrast
+   (light / shadow sides, a halftone dot pattern inside the shadows —
+   a pattern, never a generic gradient), hair, a shirt with collar,
+   and the same headset — with exactly ONE brand detail in Forge
+   Amber #E06E1A, the mic tip (brand accent from brand-guide-v2.md,
+   NOT a semantic color; no other element of the figure wears it).
+   NO arms or hands (Alberto, 2026-11-02 22:10: «Puede no llevar los
+   brazos, todo lo demás está bien» — the drawn arm read as a flower
+   stem, his call): the beats are carried by the gaze, the listening
+   tilt, the nod and the ring alone. Everything else is shared with
+   the silhouette: the
+   same two gaze dots, gaze/listening/nod classes (bust-* hooks), the
+   breathing and the blink, the retreat at the step. The dev toggle
+   (body.char-styled) picks the figure; the silhouette is the default
+   until Alberto decides. No mouth, no detailed face, no lip-sync;
+   no glassmorphism, no ornaments without meaning. --- */
+.bust-styled { display: none; }
+body.char-styled .bust-silhouette { display: none; }
+body.char-styled .bust-styled { display: block; }
+.fig-shirt { fill: #3D5269; }
+.fig-shirt-sh { fill: #2C3E52; }
+.fig-ht { opacity: 0.35; }
+.fig-collar { fill: #22303F; }
+.fig-placket { fill: #22303F; opacity: 0.55; }
+.fig-neck { fill: #5C7289; }
+.fig-ear { fill: #6E8299; }
+.fig-face { fill: #8498AD; }
+.fig-face-sh { fill: #5C7289; }
+.fig-hair { fill: #22303F; }
+.fig-band { fill: none; stroke: #1F2C3B; stroke-width: 7; stroke-linecap: round; }
+.fig-cup { fill: #2E3D4F; }
+.fig-cup-rim { fill: #46586E; }
+.fig-boom { fill: none; stroke: #1F2C3B; stroke-width: 5; stroke-linecap: round; }
+.fig-mic-tip { fill: #E06E1A; }
+.avatar-caption { color: var(--muted); font-size: 10px; letter-spacing: 0.16em; text-align: center; margin-top: 7px; }
+body.no-avatar .avatar-panel { display: none; }
+
+@media (max-width: 980px) {
+  .corner { width: min(320px, 86vw); }
+}
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .hero { grid-template-columns: 1fr; text-align: center; }
+  .hero-block, .hero-right { align-items: center; text-align: center; }
+}

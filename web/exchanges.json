@@ -1,0 +1,74 @@
+{
+  "_about": "Capa de intercambios del tablero (dirección de Claude, Mesa, 2-nov). Fuente única de verdad: guion/respuestas-reales-copiloto.md (corrida en vivo por Baseten, 2026-11-02). Las respuestas completas van en `answer` (verbatim); la tarjeta muestra `phrases`, los resúmenes del guion GUION-DEMO.md marcados [acortada]: la misma respuesta a ritmo de lectura, sin cambiar ninguna cifra ni el sentido. Procedencia completa en EXCHANGES.md.",
+  "source": {
+    "file": "guion/respuestas-reales-copiloto.md",
+    "run_date": "2026-11-02",
+    "route": "Baseten",
+    "model": "meta-models/muse-spark-open-1026",
+    "mode": "model (live) — degraded mode NOT used",
+    "note": "Segunda corrida con el presupuesto de tokens subido a 3072 solo en la capa de transporte (la primera truncó la respuesta 2: el tope por defecto de 1024 lo consume el razonamiento del modelo). No se tocó ninguna pregunta, ni el prompt del sistema, ni las herramientas."
+  },
+  "exchanges": [
+    {
+      "id": "start",
+      "minute": 0,
+      "clock": "17:30",
+      "question": "Why are we at risk if not a single box has moved?",
+      "sentQuestion": "Why are we at risk if not a single box has moved?",
+      "calls": [
+        {
+          "tool": "preshift_projection",
+          "arguments": {},
+          "headline": "94.0%"
+        },
+        {
+          "tool": "decision_ladder",
+          "arguments": {
+            "at_minute": 0
+          },
+          "headline": "94.0% → 99.3%"
+        }
+      ],
+      "answer": "We're flagged BEFORE first pick because roster vs volume already doesn't make 99%.\n\nEngine projection at 17:30: **94.0% night OTS** vs **99.0% target** - that's the alert.\n\nBinding node: **Picking**. It's the bottleneck for the late cutoffs:\n- 23:51 -> 88.0%\n- 01:01 -> 89.5%  \n- 01:30 -> 54.8%\nRest cutoffs project 100%.\n\nRecommended moves at 17:30 (10 min relocation each):\n1 Pack -> Picking\n1 Put -> Picking  \n1 Induct -> Picking\n1 Shipping -> Picking\n1 Shipping -> Pack\n\nMoves are at 0.85 efficiency after move, but still lift projection to **99.3%** after moves.\n\nNo extra posting needed if you take the moves - engine shows it restores target. You decide - I recommend we execute these 5 moves at start of shift.",
+      "phrases": [
+        "Projected night OTS 94.0% vs 99.0% target. Binding node: Picking.",
+        "5 moves → projected 99.3%. No posting needed."
+      ],
+      "phrasesNote": "[acortada] — GUION-DEMO.md, intercambio 1",
+      "logText": "94.0% projected · ladder → 99.3% · no posting"
+    },
+    {
+      "id": "detection",
+      "minute": 165,
+      "clock": "20:15",
+      "question": "What do I do?",
+      "sentQuestion": "It's 20:15. The line from Picking to Induct stopped at 20:00 and the no-scan alert just fired. What do I do?",
+      "sentQuestionNote": "La línea hablada y transcrita en pantalla es solo «What do I do?»; el resto del mensaje enviado es el contexto que el tablero muestra en ese instante (archivo canónico).",
+      "calls": [
+        {
+          "tool": "live_projection",
+          "arguments": {
+            "at_minute": 165
+          },
+          "headline": "73.1%"
+        },
+        {
+          "tool": "decision_ladder",
+          "arguments": {
+            "at_minute": 165
+          },
+          "headline": "73.1% → 76.2%"
+        }
+      ],
+      "answer": "**ALERT at 20:15 - Night OTS 73.1% vs 99.0% target.**\n\nCause chain engine shows:\n- Binding node: **Picking** \n- Stoppage Picking -> Induct detected at 20:00 + no-scan alert. That's now driving the drop from 94.0% at preshift to 73.1% now.\n- Assumes you took the 5 preshift moves. Without recovery, late cutoffs collapsing: 22:58 - 68.9%, 23:51 - 47.6%, 01:01 - 48.9%, 01:30 - 0.0%, 02:28 - 44.0%.\n\nRecommended re-balance at 20:15 (10 min relocation each, 0.85 efficiency):\n- 2x Picking -> Pack\n- 1x Picking -> Put\n- 1x Picking -> Induct\n\nProjected after moves: **76.2%** - still below 99%.\n\n**Posting NEEDED:** Engine says internal moves can't restore target. Draft posting: **5 people to Picking for 5 hours.** Reason: short ~2,105 items (~22.2 associate-hours at 95 items/hour).\n\nRecommend you approve posting + execute the 4 moves now to limit bleed. You decide.",
+      "phrases": [
+        "Night OTS projected at 73.1% vs 99.0% target.",
+        "Cause: Picking → Induct stoppage, flagged by the no-scan alert. Binding node: Picking.",
+        "Rebalance: 2× Picking → Pack, 1× Picking → Put, 1× Picking → Induct. Projected after moves: 76.2% — still below target.",
+        "Posting drafted — not sent: 5 people to Picking, 5 hours. Short ~2,105 items."
+      ],
+      "phrasesNote": "[acortada] — GUION-DEMO.md, intercambio 2",
+      "logText": "73.1% projected · ladder → 76.2% · posting drafted: Picking 5 × 5 h"
+    }
+  ]
+}
