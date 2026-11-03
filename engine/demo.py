@@ -53,7 +53,7 @@ def main() -> None:
     planned_total = sum(n.planned_staff for n in scenario.nodes)
     present_total = planned_total - sum(dict(scenario.absences).values())
 
-    print("=== Shift Copilot -- demo night (100,000 units, synthetic) ===")
+    print("=== Shift Sight Ops -- demo night (100,000 units, synthetic) ===")
     print(
         f"Absences: Picking -{scenario.absence('Picking')}, "
         f"Pack -{scenario.absence('Pack')} "

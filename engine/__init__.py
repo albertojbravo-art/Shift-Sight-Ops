@@ -1,4 +1,4 @@
-"""Shift Copilot -- deterministic simulation engine (v1).
+"""Shift Sight Ops -- deterministic simulation engine (v1).
 
 Every number the copilot shows comes from this engine; the language model
 only explains and converses, calling the engine as a tool. All scenario

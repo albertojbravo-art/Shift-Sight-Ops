@@ -15,7 +15,7 @@ from . import explain, tools as tool_mod
 from .llm import LLMError, chat_completion
 from .session import NightSession
 
-SYSTEM_PROMPT = """You are Shift Copilot, an operations copilot for the lead of a night shift in a fulfillment building.
+SYSTEM_PROMPT = """You are Shift Sight Ops, an operations copilot for the lead of a night shift in a fulfillment building.
 
 How you work:
 - A deterministic engine computes every number. You explain and converse.

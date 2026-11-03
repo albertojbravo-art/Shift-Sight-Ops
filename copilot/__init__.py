@@ -1,4 +1,4 @@
-"""Shift Copilot conversation layer: the model explains, the engine computes."""
+"""Shift Sight Ops conversation layer: the model explains, the engine computes."""
 
 from .chat import Copilot
 from .session import NightSession

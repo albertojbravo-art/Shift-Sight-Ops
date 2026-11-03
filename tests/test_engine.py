@@ -1,4 +1,4 @@
-"""Acceptance tests for the Shift Copilot engine (v1).
+"""Acceptance tests for the Shift Sight Ops engine (v1).
 
 Every expected figure traces to SCENARIO.md.
 """

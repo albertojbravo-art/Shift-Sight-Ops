@@ -1,4 +1,4 @@
-"""Core data model for the Shift Copilot simulation engine.
+"""Core data model for the Shift Sight Ops simulation engine.
 
 All figures trace to SCENARIO.md (the scenario sheet). The sheet is the
 specification; where a derived number is needed, it is computed here from the
