@@ -12,7 +12,7 @@ shortfall and drafts the extra-staff posting** for the lead to approve.
 
 Built for the **Meta Global AI Developer Hackathon** (Cerebral Valley), Indie Dev
 Track, *Build for Your World* theme. Construction period: **October 27 – November 4, 2026**.
-Team: **Alberto Bravo** (solo). Built with **Muse** (Meta AI developer tooling);
+Team: **Alberto Bravo** (solo). The copilot's conversational layer runs on **Muse Spark Open**, a Meta model, served via Baseten;
 this repository's history starts with the first construction commit of the event window.
 
 ## How it works
