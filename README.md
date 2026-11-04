@@ -15,6 +15,8 @@ Track, *Build for Your World* theme. Construction period: **October 27 – Novem
 Team: **Alberto Bravo** (solo). The copilot's conversational layer runs on **Muse Spark Open**, a Meta model, served via Baseten;
 this repository's history starts with the first construction commit of the event window.
 
+**Built with Muse Spark Open.**
+
 ## How it works
 
 - A **deterministic simulation engine** (pure Python, no dependencies) computes every
